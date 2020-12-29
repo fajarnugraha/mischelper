@@ -11,6 +11,7 @@ class Curl {
 			'request' => 30,
 		],
 		'user-agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
+		'length' => [ 'sample' => 100 ],
 	];
 	private $result = [];
 
@@ -55,8 +56,21 @@ class Curl {
 		}
 		curl_close($this->ch);
 
+		if (strlen($body) > $this->params['length']['sample']) {
+			$body_sample = substr($body, 0, $this->params['length']['sample']);
+		} else {
+			$body_sample = $body;
+		}
+		if ($body_sample && preg_match('/[^\x00-\x7E]/', $body_sample)) {
+			$body_sample='<binary>';
+		} else {
+			$body_sample=str_replace("\n", " ", $body_sample);
+		}
+
 		$this->result = [
 			'body' => $body,
+			'length' => strlen($body),
+			'sample' => $body_sample,
 			'headers' => $output_headers,
 			'info' => $info,
 			'error' => $error,
